@@ -1,110 +1,51 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bubble Archive</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Apple SD Gothic Neo", "Noto Sans CJK SC", sans-serif;
-      background-color: #f9f9fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    header {
-      width: 100%;
-      text-align: center;
-      background-color: #ffffff;
-      padding: 18px 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      font-size: 20px;
-      font-weight: bold;
-      color: #222;
-      letter-spacing: 1px;
-    }
-
-    .chat-container {
-      width: 100%;
-      max-width: 420px;
-      background: #ffffff;
-      border-radius: 16px;
-      margin-top: 20px;
-      padding: 16px 12px 100px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.05);
-      position: relative;
-    }
-
-    .bubble {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 18px;
-      margin: 6px 0;
-      font-size: 15px;
-      line-height: 1.5;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-
-    .from-user {
-      align-self: flex-end;
-      background-color: #d3e8ff;
-      color: #000;
-      border-bottom-right-radius: 4px;
-      margin-left: auto;
-    }
-
-    .from-member {
-      align-self: flex-start;
-      background-color: #ffffff;
-      border: 1px solid #e0e0e0;
-      color: #000;
-      border-bottom-left-radius: 4px;
-      margin-right: auto;
-    }
-
-    .timestamp {
-      font-size: 12px;
-      color: #aaa;
-      text-align: center;
-      margin: 12px 0;
-    }
-
-    footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      max-width: 420px;
-      background: white;
-      border-top: 1px solid #eee;
-      padding: 12px;
-      text-align: center;
-      color: #aaa;
-      font-size: 13px;
-    }
-
-  </style>
+<meta charset="UTF-8">
+<title>지원버블 메시지 기록</title>
+<style>
+  body { background:#f2f2f2; font-family: Arial, sans-serif; padding:20px;}
+  .chat { max-width:600px; margin:0 auto; display:flex; flex-direction:column;}
+  .bubble { padding:10px 15px; border-radius:15px; margin:8px 0; display:inline-block; max-width:80%; }
+  .user { background:#ffe0e0; align-self:flex-start; }
+  .me { background:#e0f0ff; align-self:flex-end; }
+  .time { font-size:12px; color:#888; margin-bottom:3px; }
+  .msg { display:flex; flex-direction:column; }
+</style>
 </head>
 <body>
-  <header>Bubble Archive</header>
+<h2>지원버블 메시지 기록</h2>
+<div class="chat" id="chat"></div>
 
-  <div class="chat-container">
+<script>
+const messages = [
+  {"time":"14:32","sender":"user","text_ko":"도착 !!!!","text_cn":"到达 !!!!"},
+  {"time":"14:32","sender":"user","text_ko":"한국도착 !!!!","text_cn":"到达韩国 !!!!"},
+  {"time":"14:33","sender":"user","text_ko":"비오넹","text_cn":"下雨了"},
+  {"time":"14:33","sender":"user","text_ko":"ㅜㅜㅜㅜㅜ","text_cn":""},
+  {"time":"14:33","sender":"user","text_ko":"나의 연휴는 지금부터닷~~","text_cn":"我的假期从现在开始~~"},
+  {"time":"14:35","sender":"user","text_ko":"뭘해야할지 아직 모르겠지만 일단 한식을 먹을거에용","text_cn":"虽然还不知道要做什么 但我要先去吃韩餐~"},
+  {"time":"14:35","sender":"user","text_ko":"허하허ㅏ핳히힣ㅎ","text_cn":"哈哈哈哈哈哈哈ㅎ"},
+  {"time":"14:35","sender":"user","text_ko":"맛있는 한식~~~","text_cn":"好吃的韩餐~~~"},
+  {"time":"14:36","sender":"user","text_ko":"멀미난다","text_cn":"晕车了"},
+  {"time":"14:36","sender":"user","text_ko":"안냥 ...","text_cn":"再见 ..."},
+  {"time":"14:36","sender":"user","text_ko":"저 멀리 초록풀을 보고있을게","text_cn":"我会看着远处的绿草"},
+  {"time":"14:36","sender":"user","text_ko":"ㅋㅋㅋㅋㅋㅋㅋ","text_cn":""},
+  {"time":"14:36","sender":"user","text_ko":"도착해서 젤 먼저 달려오고싶었어","text_cn":"到达后最想跑来"},
+  {"time":"14:36","sender":"user","text_ko":"이곳으로","text_cn":"这里"},
+  {"time":"14:38","sender":"user","text_ko":"언닝 남은연휴 잘보내궁 ~~~","text_cn":"好好度过剩下的假期 ~~~"},
+  {"time":"14:38","sender":"user","text_ko":"나도 잘 보내구우><","text_cn":"我也会好好度过的><"},
+  {"time":"14:38","sender":"user","text_ko":"사랑한다 !!","text_cn":"我爱你 !!"}
+];
 
-    <div class="timestamp">2023年2月17日</div>
-
-    <div class="bubble from-member">涩琪：今天录音结束啦！</div>
-    <div class="bubble from-user">辛苦啦！🥰</div>
-    <div class="bubble from-member">志垣：天气太冷了，大家要注意保暖～</div>
-    <div class="bubble from-member">拏炅：喝热水☕</div>
-    <div class="bubble from-user">哈哈哈可爱</div>
-    <div class="bubble from-member">涩琪：我们下次Bubble见💙</div>
-
-  </div>
-
-  <footer>涩琪 · 志垣 · 拏炅</footer>
+const chatDiv = document.getElementById("chat");
+messages.forEach(msg => {
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "msg";
+  msgDiv.innerHTML = `<div class="time">${msg.time}</div>
+                      <div class="bubble ${msg.sender}">${msg.text_ko}${msg.text_cn?'<br>'+msg.text_cn:''}</div>`;
+  chatDiv.appendChild(msgDiv);
+});
+</script>
 </body>
 </html>
