@@ -1,176 +1,110 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bubble Archive</title>
-<style>
-  :root{
-    --card-w: 920px;
-    --bg: linear-gradient(180deg,#0b1220 0%, #0e1724 100%);
-    --panel-bg: rgba(255,255,255,0.95);
-    --accent-1: #dcf8c6; /* 涩琪 */
-    --accent-2: #ffe4b5; /* 志垣 */
-    --accent-3: #ffffff; /* 拏炅 */
-    --bubble-shadow: 0 6px 18px rgba(15,20,25,0.18);
-    --muted: #7a7a7a;
-    --text-dark: #0f1720;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bubble Archive</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Apple SD Gothic Neo", "Noto Sans CJK SC", sans-serif;
+      background-color: #f9f9fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-  html,body{height:100%;margin:0;font-family:"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:#fff;}
-  canvas#bgCanvas{position:fixed;inset:0;z-index:0;display:block;}
+    header {
+      width: 100%;
+      text-align: center;
+      background-color: #ffffff;
+      padding: 18px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      font-size: 20px;
+      font-weight: bold;
+      color: #222;
+      letter-spacing: 1px;
+    }
 
-  .wrap{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;box-sizing:border-box;}
-  .card{width:var(--card-w);max-width:100%;background:var(--panel-bg);border-radius:14px;box-shadow:var(--bubble-shadow);overflow:hidden;color:var(--text-dark);display:grid;grid-template-columns:260px 1fr;min-height:600px;}
+    .chat-container {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 16px;
+      margin-top: 20px;
+      padding: 16px 12px 100px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+      position: relative;
+    }
 
-  .sidebar{padding:18px 14px;border-right:1px solid rgba(0,0,0,0.06);}
-  .title{font-weight:700;color:#0b1220;margin:0 0 12px 6px;font-size:18px;}
-  .members{list-style:none;padding:0;margin:0;}
-  .members li{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all .15s;}
-  .members li:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(12,18,25,0.06);}
-  .avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;}
-  .mname{font-weight:600;color:#0b1220;}
-  .mmeta{font-size:12px;color:var(--muted);margin-left:auto;}
+    .bubble {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 18px;
+      margin: 6px 0;
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
 
-  .panel{display:flex;flex-direction:column;min-height:600px;}
-  .panel-head{padding:14px 18px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;gap:12px;}
-  .h-title{font-weight:700;color:#0b1220;font-size:16px;}
-  .h-sub{font-size:13px;color:var(--muted);margin-left:6px;}
-  .dates{width:260px;border-right:1px solid rgba(0,0,0,0.04);overflow:auto;padding:10px;}
-  .date-item{padding:12px;border-radius:8px;margin-bottom:10px;background:rgba(11,17,32,0.02);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:8px;}
-  .date-item:hover{background:rgba(11,17,32,0.04);transform:translateY(-2px);}
-  .dlabel{font-weight:600;color:#0b1220;}
-  .dcount{margin-left:auto;font-size:12px;color:var(--muted);}
+    .from-user {
+      align-self: flex-end;
+      background-color: #d3e8ff;
+      color: #000;
+      border-bottom-right-radius: 4px;
+      margin-left: auto;
+    }
 
-  .chat-view{flex:1;padding:18px;display:flex;flex-direction:column;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(255,255,255,0.92));}
-  .day-sep{align-self:center;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,0.04);font-size:13px;color:var(--muted);margin:8px 0;}
-  .messages{display:flex;flex-direction:column;gap:8px;}
-  .message{display:flex;max-width:78%;align-items:flex-end;}
-  .message.left{justify-content:flex-start;}
-  .message.right{justify-content:flex-end;margin-left:auto;}
-  .bubble{padding:10px 14px;border-radius:16px;box-shadow:0 6px 18px rgba(15,20,25,0.06);position:relative;word-break:break-word;font-size:14px;line-height:1.35;}
-  .bubble::after{content:'';position:absolute;bottom:4px;width:12px;height:12px;transform:rotate(45deg);}
-  .message.left .bubble::after{left:-6px;background:inherit;}
-  .message.right .bubble::after{right:-6px;background:inherit;}
-  .bubble.seqi{background:var(--accent-1);color:#08210b;}
-  .bubble.zhiyuan{background:var(--accent-2);color:#2b1600;}
-  .bubble.najiong{background:var(--accent-3);color:#0f1720;border:1px solid rgba(0,0,0,0.06);}
-  .meta{font-size:12px;color:var(--muted);margin-top:6px;}
-  .avatar-mini{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;}
-  @media (max-width:880px){.card{grid-template-columns:1fr;min-height:100vh;border-radius:12px;}.dates{display:none;}}
-</style>
+    .from-member {
+      align-self: flex-start;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      color: #000;
+      border-bottom-left-radius: 4px;
+      margin-right: auto;
+    }
+
+    .timestamp {
+      font-size: 12px;
+      color: #aaa;
+      text-align: center;
+      margin: 12px 0;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-top: 1px solid #eee;
+      padding: 12px;
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+  </style>
 </head>
 <body>
-<canvas id="bgCanvas"></canvas>
-<div class="wrap">
-  <div class="card">
-    <aside class="sidebar">
-      <h3 class="title">Bubble Archive</h3>
-      <ul class="members" id="memberList"></ul>
-    </aside>
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <span class="h-title" id="panelTitle">选择成员查看消息</span>
-          <span class="h-sub" id="panelSub"></span>
-        </div>
-      </div>
-      <div style="display:flex;flex:1;">
-        <div class="dates" id="dateList"></div>
-        <main class="chat-view">
-          <div class="messages" id="messages"><div class="day-sep">请选择成员</div></div>
-        </main>
-      </div>
-    </section>
+  <header>Bubble Archive</header>
+
+  <div class="chat-container">
+
+    <div class="timestamp">2023年2月17日</div>
+
+    <div class="bubble from-member">涩琪：今天录音结束啦！</div>
+    <div class="bubble from-user">辛苦啦！🥰</div>
+    <div class="bubble from-member">志垣：天气太冷了，大家要注意保暖～</div>
+    <div class="bubble from-member">拏炅：喝热水☕</div>
+    <div class="bubble from-user">哈哈哈可爱</div>
+    <div class="bubble from-member">涩琪：我们下次Bubble见💙</div>
+
   </div>
-</div>
 
-<script>
-/* 背景气泡动画 */
-(function(){
-  const c=document.getElementById('bgCanvas'),x=c.getContext('2d');
-  let W=c.width=innerWidth,H=c.height=innerHeight;
-  const bubs=[];
-  const rand=(a,b)=>Math.random()*(b-a)+a;
-  function mk(){return{x:rand(0,W),y:rand(0,H),r:rand(12,100),v:rand(0.1,0.5),a:rand(0.03,0.15)};}
-  for(let i=0;i<28;i++)bubs.push(mk());
-  addEventListener('resize',()=>{W=c.width=innerWidth;H=c.height=innerHeight;});
-  function draw(){
-    x.clearRect(0,0,W,H);
-    for(const b of bubs){
-      b.y-=b.v;if(b.y<-b.r){b.y=H+b.r;b.x=rand(0,W);}
-      const g=x.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
-      g.addColorStop(0,`rgba(255,255,255,${b.a})`);
-      g.addColorStop(1,'rgba(255,255,255,0)');
-      x.fillStyle=g;x.beginPath();x.arc(b.x,b.y,b.r,0,2*Math.PI);x.fill();
-    }
-    requestAnimationFrame(draw);
-  }draw();
-})();
-
-/* 数据 */
-const DATA={
-  "涩琪":{"2025-10-08":[
-    {sender:"涩琪",time:"09:12",text:"今天要不要一起去练习？"},
-    {sender:"志垣",time:"09:14",text:"可以，下午两点怎么样？"},
-    {sender:"涩琪",time:"09:16",text:"两点可以，我会带资料。"}]},
-  "志垣":{"2025-10-07":[
-    {sender:"志垣",time:"11:02",text:"午饭吃什么？"},
-    {sender:"涩琪",time:"11:05",text:"我想吃炸酱面。"}]},
-  "拏炅":{"2025-09-30":[
-    {sender:"拏炅",time:"21:15",text:"准备把乐器清理一下。"},
-    {sender:"涩琪",time:"21:20",text:"好的，谢啦。"}]}
-};
-const members=["涩琪","志垣","拏炅"];
-const colorMap={涩琪:"seqi",志垣:"zhiyuan",拏炅:"najiong"};
-const avatarColor={涩琪:"#2d8a4a",志垣:"#d18a36",拏炅:"#6b6b6b"};
-const mList=document.getElementById('memberList');
-const dList=document.getElementById('dateList');
-const msgs=document.getElementById('messages');
-const title=document.getElementById('panelTitle');
-function renderMembers(){
-  mList.innerHTML="";
-  members.forEach(n=>{
-    const li=document.createElement("li");
-    li.dataset.name=n;
-    li.innerHTML=`<div class="avatar" style="background:${avatarColor[n]}">${n[0]}</div><div class="mname">${n}</div>`;
-    li.onclick=()=>selectMember(n);
-    mList.appendChild(li);
-  });
-}
-renderMembers();
-let current=null;
-function selectMember(n){
-  current=n;
-  title.textContent=n;
-  renderDates(n);
-  msgs.innerHTML='<div class="day-sep">请选择日期</div>';
-}
-function renderDates(n){
-  dList.innerHTML="";
-  const days=Object.keys(DATA[n]||{}).sort((a,b)=>b.localeCompare(a));
-  days.forEach(d=>{
-    const div=document.createElement("div");
-    div.className="date-item";
-    div.innerHTML=`<div class="dlabel">${d}</div><div class="dcount">${DATA[n][d].length} 条</div>`;
-    div.onclick=()=>renderMsgs(n,d);
-    dList.appendChild(div);
-  });
-}
-function renderMsgs(n,d){
-  msgs.innerHTML=`<div class="day-sep">${d}</div>`;
-  DATA[n][d].forEach(m=>{
-    const side=m.sender===n?"right":"left";
-    const color=colorMap[m.sender];
-    const wrap=document.createElement("div");
-    wrap.className=`message ${side}`;
-    const b=document.createElement("div");
-    b.className=`bubble ${color}`;
-    b.innerHTML=`<div>${m.text}</div><div class="meta">${m.sender} · ${m.time}</div>`;
-    wrap.appendChild(b);
-    msgs.appendChild(wrap);
-  });
-}
-</script>
+  <footer>涩琪 · 志垣 · 拏炅</footer>
 </body>
 </html>
